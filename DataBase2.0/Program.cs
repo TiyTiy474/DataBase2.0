@@ -7,6 +7,7 @@ namespace DataBase2._0
 {
     class Program
     {
+        // Static context for the entire application. Disposed on exit.
         private static MusicStoreContext _context;
 
         static void Main(string[] args)
@@ -25,7 +26,8 @@ namespace DataBase2._0
                 Console.WriteLine("0. Выход");
                 Console.Write("\nВыберите опцию: ");
 
-                switch (Console.ReadLine())
+                string choice = Console.ReadLine() ?? "";
+                switch (choice)
                 {
                     case "1":
                         ManageDiscs();
@@ -46,6 +48,8 @@ namespace DataBase2._0
                         ViewReports();
                         break;
                     case "0":
+                        // Dispose the context to free resources before exit.
+                        _context.Dispose();
                         return;
                     default:
                         Console.WriteLine("Неверная опция!");
@@ -67,7 +71,8 @@ namespace DataBase2._0
                 Console.WriteLine("0. Вернуться в главное меню");
                 Console.Write("\nВыберите опцию: ");
 
-                switch (Console.ReadLine())
+                string opt = Console.ReadLine() ?? "";
+                switch (opt)
                 {
                     case "1":
                         AddDisc();
@@ -96,19 +101,35 @@ namespace DataBase2._0
             {
                 Console.WriteLine("\nВведите данные диска:");
                 Console.Write("Название: ");
-                string name = Console.ReadLine();
+                string name = Console.ReadLine() ?? "";
 
                 Console.Write("ID исполнителя: ");
-                int artistId = int.Parse(Console.ReadLine());
+                if (!int.TryParse(Console.ReadLine(), out int artistId))
+                {
+                    Console.WriteLine("Некорректный ID исполнителя!");
+                    return;
+                }
 
                 Console.Write("ID жанра: ");
-                int genreId = int.Parse(Console.ReadLine());
+                if (!int.TryParse(Console.ReadLine(), out int genreId))
+                {
+                    Console.WriteLine("Некорректный ID жанра!");
+                    return;
+                }
 
                 Console.Write("Цена: ");
-                decimal price = decimal.Parse(Console.ReadLine());
+                if (!decimal.TryParse(Console.ReadLine(), out decimal price))
+                {
+                    Console.WriteLine("Некорректная цена!");
+                    return;
+                }
 
                 Console.Write("Караоке (true/false): ");
-                bool isKaraoke = bool.Parse(Console.ReadLine());
+                if (!bool.TryParse(Console.ReadLine(), out bool isKaraoke))
+                {
+                    Console.WriteLine("Некорректное значение для караоке!");
+                    return;
+                }
 
                 var disc = new Disc
                 {
@@ -152,7 +173,8 @@ namespace DataBase2._0
                 Console.WriteLine("0. Вернуться в главное меню");
                 Console.Write("\nВыберите опцию: ");
 
-                switch (Console.ReadLine())
+                string opt = Console.ReadLine() ?? "";
+                switch (opt)
                 {
                     case "1":
                         RegisterSale();
@@ -178,7 +200,6 @@ namespace DataBase2._0
             {
                 Console.WriteLine("\nВведите данные продажи:");
 
-                // Проверка и получение ID диска
                 Console.Write("ID диска: ");
                 if (!int.TryParse(Console.ReadLine(), out int discId))
                 {
@@ -193,7 +214,6 @@ namespace DataBase2._0
                     return;
                 }
 
-                // Проверка и получение ID продавца
                 Console.Write("ID продавца: ");
                 if (!int.TryParse(Console.ReadLine(), out int sellerId))
                 {
@@ -211,7 +231,6 @@ namespace DataBase2._0
                 Console.Write("Место продажи: ");
                 string location = Console.ReadLine() ?? "Неизвестно";
 
-                // Обработка скидочной карты
                 decimal salePrice = disc.Price;
                 int? discountCardId = null;
 
@@ -245,7 +264,7 @@ namespace DataBase2._0
                     Location = location,
                     SaleDate = DateTime.Now,
                     SalePrice = salePrice,
-                    DiscountCardID = discountCardId // Теперь это nullable int
+                    DiscountCardID = discountCardId
                 };
 
                 _context.Sales.Add(sale);
@@ -393,7 +412,8 @@ namespace DataBase2._0
                 Console.WriteLine("0. Вернуться в главное меню");
                 Console.Write("\nВыберите опцию: ");
 
-                switch (Console.ReadLine())
+                string opt = Console.ReadLine() ?? "";
+                switch (opt)
                 {
                     case "1":
                         AddArtist();
@@ -422,7 +442,7 @@ namespace DataBase2._0
             {
                 Console.WriteLine("\nВведите данные исполнителя:");
                 Console.Write("Имя: ");
-                string name = Console.ReadLine();
+                string name = Console.ReadLine() ?? "";
 
                 var artist = new Artist { Name = name };
                 _context.Artists.Add(artist);
@@ -475,7 +495,7 @@ namespace DataBase2._0
                 }
 
                 Console.Write("Введите новое имя исполнителя: ");
-                string newName = Console.ReadLine();
+                string newName = Console.ReadLine() ?? "";
 
                 artist.Name = newName;
                 _context.SaveChanges();
@@ -505,7 +525,6 @@ namespace DataBase2._0
                     return;
                 }
 
-                // Проверка на связанные диски
                 var hasDiscs = _context.Discs.Any(d => d.ArtistId == id);
                 if (hasDiscs)
                 {
@@ -523,7 +542,6 @@ namespace DataBase2._0
             }
         }
 
-
         private static void ManageDiscountCards()
         {
             while (true)
@@ -537,7 +555,8 @@ namespace DataBase2._0
                 Console.WriteLine("0. Вернуться в главное меню");
                 Console.Write("\nВыберите опцию: ");
 
-                switch (Console.ReadLine())
+                string opt = Console.ReadLine() ?? "";
+                switch (opt)
                 {
                     case "1":
                         AddDiscountCard();
@@ -567,10 +586,10 @@ namespace DataBase2._0
                 Console.WriteLine("\nВведите данные скидочной карты:");
 
                 Console.Write("Номер карты: ");
-                string cardNumber = Console.ReadLine();
+                string cardNumber = Console.ReadLine() ?? "";
 
                 Console.Write("ФИО владельца: ");
-                string ownerName = Console.ReadLine();
+                string ownerName = Console.ReadLine() ?? "";
 
                 Console.Write("Процент скидки (0-100): ");
                 if (!decimal.TryParse(Console.ReadLine(), out decimal discountPercentage) ||
@@ -586,7 +605,7 @@ namespace DataBase2._0
                     CardNumber = cardNumber,
                     OwnerName = ownerName,
                     DiscountPercentage = discountPercentage,
-                    IssueDate = DateTime.Now // Устанавливаем текущую дату как дату выдачи
+                    IssueDate = DateTime.Now
                 };
 
                 _context.DiscountCards.Add(discountCard);
@@ -666,21 +685,21 @@ namespace DataBase2._0
                 Console.WriteLine("\nОставьте поле пустым, если не хотите его менять.");
 
                 Console.Write("Новый номер карты: ");
-                string newCardNumber = Console.ReadLine();
+                string newCardNumber = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(newCardNumber))
                 {
                     card.CardNumber = newCardNumber;
                 }
 
                 Console.Write("Новый владелец: ");
-                string newOwnerName = Console.ReadLine();
+                string newOwnerName = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(newOwnerName))
                 {
                     card.OwnerName = newOwnerName;
                 }
 
                 Console.Write("Новый процент скидки (0-100): ");
-                string discountInput = Console.ReadLine();
+                string discountInput = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(discountInput))
                 {
                     if (decimal.TryParse(discountInput, out decimal newDiscountPercentage) &&
@@ -722,13 +741,12 @@ namespace DataBase2._0
                     return;
                 }
 
-                // Проверка на связанные продажи
                 var hasSales = _context.Sales.Any(s => s.DiscountCardID == id);
                 if (hasSales)
                 {
                     Console.WriteLine("Внимание! С этой картой связаны продажи.");
                     Console.Write("Вы уверены, что хотите удалить карту? (да/нет): ");
-                    if (Console.ReadLine()?.ToLower() != "да")
+                    if ((Console.ReadLine()?.ToLower() ?? "") != "да")
                     {
                         Console.WriteLine("Операция отменена.");
                         return;
@@ -758,7 +776,8 @@ namespace DataBase2._0
                 Console.WriteLine("0. Вернуться в главное меню");
                 Console.Write("\nВыберите опцию: ");
 
-                switch (Console.ReadLine())
+                string opt = Console.ReadLine() ?? "";
+                switch (opt)
                 {
                     case "1":
                         AddEmployer();
@@ -788,7 +807,7 @@ namespace DataBase2._0
                 Console.WriteLine("\nВведите данные сотрудника:");
 
                 Console.Write("ФИО: ");
-                string name = Console.ReadLine();
+                string name = Console.ReadLine() ?? "";
                 if (string.IsNullOrWhiteSpace(name))
                 {
                     Console.WriteLine("ФИО не может быть пустым!");
@@ -796,7 +815,7 @@ namespace DataBase2._0
                 }
 
                 Console.Write("Должность: ");
-                string position = Console.ReadLine();
+                string position = Console.ReadLine() ?? "";
                 if (string.IsNullOrWhiteSpace(position))
                 {
                     Console.WriteLine("Должность не может быть пустой!");
@@ -884,14 +903,14 @@ namespace DataBase2._0
                 Console.WriteLine("Оставьте поле пустым, если не хотите его менять.");
 
                 Console.Write("Новое ФИО: ");
-                string newName = Console.ReadLine();
+                string newName = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(newName))
                 {
                     employer.Name = newName;
                 }
 
                 Console.Write("Новая должность: ");
-                string newPosition = Console.ReadLine();
+                string newPosition = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(newPosition))
                 {
                     employer.Position = newPosition;
@@ -924,7 +943,6 @@ namespace DataBase2._0
                     return;
                 }
 
-                // Проверка на связанные продажи
                 var hasSales = _context.Sales.Any(s => s.SellerID == id);
                 if (hasSales)
                 {
@@ -974,14 +992,14 @@ namespace DataBase2._0
                 Console.WriteLine("\nОставьте поле пустым, если не хотите его менять.");
 
                 Console.Write("Новое название: ");
-                string newName = Console.ReadLine();
+                string newName = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(newName))
                 {
                     disc.DiscName = newName;
                 }
 
                 Console.Write("Новый ID исполнителя (текущий: " + disc.ArtistId + "): ");
-                string artistIdInput = Console.ReadLine();
+                string artistIdInput = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(artistIdInput))
                 {
                     if (int.TryParse(artistIdInput, out int newArtistId))
@@ -1003,14 +1021,14 @@ namespace DataBase2._0
                 }
 
                 Console.Write("Новый жанр: ");
-                string newGenre = Console.ReadLine();
+                string newGenre = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(newGenre))
                 {
                     disc.Genre = newGenre;
                 }
 
                 Console.Write($"Новая цена (текущая: {disc.Price:C}): ");
-                string priceInput = Console.ReadLine();
+                string priceInput = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(priceInput))
                 {
                     if (decimal.TryParse(priceInput, out decimal newPrice) && newPrice >= 0)
@@ -1024,7 +1042,7 @@ namespace DataBase2._0
                 }
 
                 Console.Write($"Караоке (true/false) (текущее: {disc.IsKaraoke}): ");
-                string karaokeInput = Console.ReadLine();
+                string karaokeInput = Console.ReadLine() ?? "";
                 if (!string.IsNullOrWhiteSpace(karaokeInput))
                 {
                     if (bool.TryParse(karaokeInput, out bool newIsKaraoke))
@@ -1040,7 +1058,6 @@ namespace DataBase2._0
                 _context.SaveChanges();
                 Console.WriteLine("Информация о диске успешно обновлена!");
 
-                // Показываем обновленную информацию
                 Console.WriteLine("\nОбновленная информация о диске:");
                 Console.WriteLine($"Название: {disc.DiscName}");
                 Console.WriteLine($"Исполнитель: {_context.Artists.Find(disc.ArtistId)?.Name}");
@@ -1075,7 +1092,6 @@ namespace DataBase2._0
                     return;
                 }
 
-                // Проверка на связанные продажи
                 var hasSales = _context.Sales.Any(s => s.DiscId == id);
                 if (hasSales)
                 {
@@ -1089,7 +1105,7 @@ namespace DataBase2._0
                 Console.WriteLine($"Цена: {disc.Price:C}");
                 Console.Write("\nВведите 'да' для подтверждения: ");
 
-                if (Console.ReadLine()?.ToLower() != "да")
+                if ((Console.ReadLine()?.ToLower() ?? "") != "да")
                 {
                     Console.WriteLine("Операция отменена.");
                     return;
@@ -1144,7 +1160,6 @@ namespace DataBase2._0
                         $"{discountInfo}");
                 }
 
-                // Статистика
                 decimal totalRevenue = sales.Sum(s => s.SalePrice);
                 int totalSales = sales.Count;
                 decimal averageSale = totalSales > 0 ? totalRevenue / totalSales : 0;
@@ -1154,7 +1169,6 @@ namespace DataBase2._0
                 Console.WriteLine($"Общая выручка: {totalRevenue:C}");
                 Console.WriteLine($"Средний чек: {averageSale:C}");
 
-                // Детальная информация о конкретной продаже
                 Console.Write("\nВведите ID продажи для подробной информации (или 0 для возврата): ");
                 if (int.TryParse(Console.ReadLine(), out int saleId) && saleId != 0)
                 {
@@ -1185,7 +1199,8 @@ namespace DataBase2._0
                 Console.WriteLine("3. За последние N дней");
                 Console.Write("Выберите опцию: ");
 
-                switch (Console.ReadLine())
+                string choice = Console.ReadLine() ?? "";
+                switch (choice)
                 {
                     case "1":
                         ViewSalesForSpecificDate();
@@ -1206,7 +1221,6 @@ namespace DataBase2._0
                 Console.WriteLine($"Ошибка при просмотре продаж по дате: {ex.Message}");
             }
         }
-
 
         private static void ViewSalesForSpecificDate()
         {
@@ -1270,7 +1284,8 @@ namespace DataBase2._0
                 Console.WriteLine("0. Вернуться в главное меню");
                 Console.Write("\nВыберите опцию: ");
 
-                switch (Console.ReadLine())
+                string opt = Console.ReadLine() ?? "";
+                switch (opt)
                 {
                     case "1":
                         SalesByPeriod();
@@ -1298,7 +1313,6 @@ namespace DataBase2._0
                 Console.ReadKey();
             }
         }
-
 
         private static void TopSellingDiscs()
         {
@@ -1502,7 +1516,6 @@ namespace DataBase2._0
                 Console.WriteLine(
                     $"Среднее количество продаж на сотрудника: {employeeStats.Average(x => x.TotalSales):F2}");
 
-                // Находим лучшего сотрудника по выручке
                 var bestEmployee = employeeStats.OrderByDescending(x => x.TotalRevenue).First();
                 Console.WriteLine($"\nЛучший сотрудник по выручке: {bestEmployee.Employee.Name}");
                 Console.WriteLine($"Общая выручка: {bestEmployee.TotalRevenue:C}");
@@ -1520,7 +1533,6 @@ namespace DataBase2._0
             {
                 Console.WriteLine("\n=== Финансовый отчет ===");
 
-                // Получаем все продажи с включением связанных данных
                 var sales = _context.Sales
                     .Include(s => s.SoldDisc)
                     .Include(s => s.Seller)
@@ -1533,13 +1545,11 @@ namespace DataBase2._0
                     return;
                 }
 
-                // Общая статистика
                 var totalRevenue = sales.Sum(s => s.SalePrice);
                 var totalCost = sales.Sum(s => s.SoldDisc?.PurchasePrice ?? 0);
                 var totalProfit = totalRevenue - totalCost;
                 var averageProfit = totalProfit / sales.Count;
 
-                // Статистика по месяцам
                 var monthlyStats = sales
                     .GroupBy(s => new { s.SaleDate.Year, s.SaleDate.Month })
                     .Select(g => new
@@ -1554,7 +1564,6 @@ namespace DataBase2._0
                     .ThenByDescending(x => x.Month)
                     .ToList();
 
-                // Вывод общей статистики
                 Console.WriteLine("\n=== Общая статистика ===");
                 Console.WriteLine($"Общая выручка: {totalRevenue:C}");
                 Console.WriteLine($"Общие затраты: {totalCost:C}");
@@ -1562,7 +1571,6 @@ namespace DataBase2._0
                 Console.WriteLine($"Средняя прибыль с продажи: {averageProfit:C}");
                 Console.WriteLine($"Количество продаж: {sales.Count}");
 
-                // Статистика по скидкам
                 var discountStats = sales
                     .Where(s => s.DiscountCard != null)
                     .GroupBy(s => s.DiscountCard.DiscountPercentage)
@@ -1581,7 +1589,6 @@ namespace DataBase2._0
                         $"Скидка {stat.DiscountPercentage}%: {stat.Count} продаж, сумма скидок: {stat.TotalDiscount:C}");
                 }
 
-                // Вывод статистики по месяцам
                 Console.WriteLine("\n=== Статистика по месяцам ===");
                 Console.WriteLine(new string('-', 80));
                 Console.WriteLine("Период | Выручка | Затраты | Прибыль | Кол-во продаж | Средний чек");
@@ -1601,7 +1608,6 @@ namespace DataBase2._0
                         $"{averageCheck,11:C}");
                 }
 
-                // Анализ трендов
                 if (monthlyStats.Count >= 2)
                 {
                     var lastMonth = monthlyStats.First();
@@ -1620,6 +1626,5 @@ namespace DataBase2._0
             Console.WriteLine("\nНажмите любую клавишу для продолжения...");
             Console.ReadKey();
         }
-
     }
 }

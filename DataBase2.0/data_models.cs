@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace DataBase2._0
 {
     public class Disc
-    {
+    { 
         public int ID { get; set; }
         public string DiscName { get; set; }
         public string ArtistName { get; set; }
