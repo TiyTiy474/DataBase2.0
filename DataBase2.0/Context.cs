@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace DataBase2._0
 {
@@ -6,13 +7,17 @@ namespace DataBase2._0
     {
         public DbSet<Disc> Discs { get; set; }
         public DbSet<Artist> Artists { get; set; }
-        public DbSet<DiscountCard> DiscountCards { get; set; }
-        public DbSet<Employer> Employers { get; set; }
+        public DbSet<Genre> Genres { get; set; }
         public DbSet<Sale> Sales { get; set; }
+        public DbSet<Employer> Employers { get; set; }
+        public DbSet<DiscountCard> DiscountCards { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source = C:/Users/purpl/RiderProjects/DataBase2.0/DataBase2.0/music.db");
+            optionsBuilder.UseNpgsql("Host=localhost;" +
+                                     "Database=Misic;" +
+                                     "Username=TiyTiy;" +
+                                     "Password=110381;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,7 +32,7 @@ namespace DataBase2._0
             modelBuilder.Entity<Disc>(entity =>
             {
                 entity.HasKey(d => d.ID);
-                
+
                 entity.Property(d => d.Price)
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
@@ -54,7 +59,7 @@ namespace DataBase2._0
             modelBuilder.Entity<Artist>(entity =>
             {
                 entity.HasKey(a => a.ID);
-                
+
                 entity.Property(a => a.Name)
                     .IsRequired();
 
@@ -65,7 +70,7 @@ namespace DataBase2._0
             modelBuilder.Entity<DiscountCard>(entity =>
             {
                 entity.HasKey(dc => dc.ID);
-                
+
                 entity.Property(dc => dc.CardNumber)
                     .IsRequired();
 
@@ -84,7 +89,7 @@ namespace DataBase2._0
             modelBuilder.Entity<Employer>(entity =>
             {
                 entity.HasKey(e => e.ID);
-                
+
                 entity.Property(e => e.Name)
                     .IsRequired();
 
@@ -102,7 +107,7 @@ namespace DataBase2._0
             modelBuilder.Entity<Sale>(entity =>
             {
                 entity.HasKey(s => s.ID);
-                
+
                 entity.Property(s => s.Location)
                     .IsRequired();
 
@@ -112,8 +117,6 @@ namespace DataBase2._0
                 entity.Property(s => s.SalePrice)
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
-
-                
             });
         }
     }

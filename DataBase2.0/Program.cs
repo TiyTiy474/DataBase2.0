@@ -7,7 +7,6 @@ namespace DataBase2._0
 {
     class Program
     {
-        // Static context for the entire application. Disposed on exit.
         private static MusicStoreContext _context;
 
         static void Main(string[] args)
@@ -22,7 +21,8 @@ namespace DataBase2._0
                 Console.WriteLine("3. Управление продажами");
                 Console.WriteLine("4. Управление скидочными картами");
                 Console.WriteLine("5. Управление сотрудниками");
-                Console.WriteLine("6. Просмотр отчётов");
+                Console.WriteLine("6. Управление жанрами");
+                Console.WriteLine("7. Просмотр отчётов");
                 Console.WriteLine("0. Выход");
                 Console.Write("\nВыберите опцию: ");
 
@@ -45,16 +45,157 @@ namespace DataBase2._0
                         ManageEmployers();
                         break;
                     case "6":
+                        ManageGenres();
+                        break;
+                    case "7":
                         ViewReports();
                         break;
                     case "0":
-                        // Dispose the context to free resources before exit.
                         _context.Dispose();
                         return;
                     default:
                         Console.WriteLine("Неверная опция!");
                         break;
                 }
+            }
+        }
+
+        private static void ManageGenres()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Управление жанрами ===");
+                Console.WriteLine("1. Добавить новый жанр");
+                Console.WriteLine("2. Просмотреть все жанры");
+                Console.WriteLine("3. Обновить информацию о жанре");
+                Console.WriteLine("4. Удалить жанр");
+                Console.WriteLine("0. Вернуться в главное меню");
+                Console.Write("\nВыберите опцию: ");
+
+                string opt = Console.ReadLine() ?? "";
+                switch (opt)
+                {
+                    case "1":
+                        AddGenre();
+                        break;
+                    case "2":
+                        ViewGenres();
+                        break;
+                    case "3":
+                        UpdateGenre();
+                        break;
+                    case "4":
+                        DeleteGenre();
+                        break;
+                    case "0":
+                        return;
+                }
+
+                Console.WriteLine("\nНажмите любую клавишу для продолжения...");
+                Console.ReadKey();
+            }
+        }
+        private static void AddGenre()
+        {
+            try
+            {
+                Console.WriteLine("\nВведите данные жанра:");
+                Console.Write("Название: ");
+                string name = Console.ReadLine() ?? "";
+
+                var genre = new Genre { Name = name };
+                _context.Genres.Add(genre);
+                _context.SaveChanges();
+                Console.WriteLine("Жанр успешно добавлен!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении жанра: {ex.Message}");
+            }
+        }
+
+        private static void ViewGenres()
+        {
+            try
+            {
+                var genres = _context.Genres.ToList();
+
+                Console.WriteLine("\nСписок всех жанров:");
+                foreach (var genre in genres)
+                {
+                    Console.WriteLine($"ID: {genre.ID}, Название: {genre.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при получении списка жанров: {ex.Message}");
+            }
+        }
+
+        private static void UpdateGenre()
+        {
+            try
+            {
+                Console.Write("\nВведите ID жанра для обновления: ");
+                if (!int.TryParse(Console.ReadLine(), out int id))
+                {
+                    Console.WriteLine("Некорректный ID!");
+                    return;
+                }
+
+                var genre = _context.Genres.Find(id);
+                if (genre == null)
+                {
+                    Console.WriteLine("Жанр не найден!");
+                    return;
+                }
+
+                Console.Write("Введите новое название жанра: ");
+                string newName = Console.ReadLine() ?? "";
+
+                genre.Name = newName;
+                _context.SaveChanges();
+                Console.WriteLine("Информация о жанре успешно обновлена!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при обновлении информации о жанре: {ex.Message}");
+            }
+        }
+
+        private static void DeleteGenre()
+        {
+            try
+            {
+                Console.Write("\nВведите ID жанра для удаления: ");
+                if (!int.TryParse(Console.ReadLine(), out int id))
+                {
+                    Console.WriteLine("Некорректный ID!");
+                    return;
+                }
+
+                var genre = _context.Genres.Find(id);
+                if (genre == null)
+                {
+                    Console.WriteLine("Жанр не найден!");
+                    return;
+                }
+
+                var hasDiscs = _context.Discs.Any(d => d.GenreId == id);
+                if (hasDiscs)
+                {
+                    Console.WriteLine("Невозможно удалить жанр, так как с ним связаны диски!");
+                    return;
+                }
+
+                _context.Genres.Remove(genre);
+                _context.SaveChanges();
+                Console.WriteLine("Жанр успешно удален!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при удалении жанра: {ex.Message}");
             }
         }
 
@@ -110,10 +251,24 @@ namespace DataBase2._0
                     return;
                 }
 
+                var artist = _context.Artists.Find(artistId);
+                if (artist == null)
+                {
+                    Console.WriteLine("Исполнитель не найден!");
+                    return;
+                }
+
                 Console.Write("ID жанра: ");
                 if (!int.TryParse(Console.ReadLine(), out int genreId))
                 {
                     Console.WriteLine("Некорректный ID жанра!");
+                    return;
+                }
+
+                var genre = _context.Genres.Find(genreId);
+                if (genre == null)
+                {
+                    Console.WriteLine("Жанр не найден!");
                     return;
                 }
 
@@ -135,7 +290,9 @@ namespace DataBase2._0
                 {
                     DiscName = name,
                     ArtistId = artistId,
+                    ArtistName = artist.Name,
                     GenreId = genreId,
+                    Genre = genre.Name, // Ensure Genre is set
                     Price = price,
                     IsKaraoke = isKaraoke
                 };
@@ -144,11 +301,16 @@ namespace DataBase2._0
                 _context.SaveChanges();
                 Console.WriteLine("Диск успешно добавлен!");
             }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении диска: {ex.InnerException?.Message ?? ex.Message}");
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при добавлении диска: {ex.Message}");
             }
         }
+
 
         private static void ViewDiscs()
         {
@@ -1626,5 +1788,6 @@ namespace DataBase2._0
             Console.WriteLine("\nНажмите любую клавишу для продолжения...");
             Console.ReadKey();
         }
+        
     }
 }
