@@ -96,6 +96,7 @@ namespace DataBase2._0
                 Console.ReadKey();
             }
         }
+
         private static void AddGenre()
         {
             try
@@ -104,10 +105,20 @@ namespace DataBase2._0
                 Console.Write("Название: ");
                 string name = Console.ReadLine() ?? "";
 
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    Console.WriteLine("Название жанра не может быть пустым!");
+                    return;
+                }
+
                 var genre = new Genre { Name = name };
                 _context.Genres.Add(genre);
                 _context.SaveChanges();
                 Console.WriteLine("Жанр успешно добавлен!");
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении жанра: {ex.InnerException?.Message ?? ex.Message}");
             }
             catch (Exception ex)
             {
@@ -311,7 +322,6 @@ namespace DataBase2._0
             }
         }
 
-
         private static void ViewDiscs()
         {
             var discs = _context.Discs.Include(d => d.Artist).ToList();
@@ -424,7 +434,7 @@ namespace DataBase2._0
                     DiscId = discId,
                     SellerID = sellerId,
                     Location = location,
-                    SaleDate = DateTime.Now,
+                    SaleDate = DateTime.UtcNow, // Ensure the date is in UTC
                     SalePrice = salePrice,
                     DiscountCardID = discountCardId
                 };
@@ -439,6 +449,10 @@ namespace DataBase2._0
                     var discount = _context.DiscountCards.Find(discountCardId.Value);
                     Console.WriteLine($"Применена скидка: {discount?.DiscountPercentage}%");
                 }
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Ошибка при регистрации продажи: {ex.InnerException?.Message ?? ex.Message}");
             }
             catch (Exception ex)
             {
@@ -750,8 +764,20 @@ namespace DataBase2._0
                 Console.Write("Номер карты: ");
                 string cardNumber = Console.ReadLine() ?? "";
 
+                if (string.IsNullOrWhiteSpace(cardNumber))
+                {
+                    Console.WriteLine("Номер карты не может быть пустым!");
+                    return;
+                }
+
                 Console.Write("ФИО владельца: ");
                 string ownerName = Console.ReadLine() ?? "";
+
+                if (string.IsNullOrWhiteSpace(ownerName))
+                {
+                    Console.WriteLine("ФИО владельца не может быть пустым!");
+                    return;
+                }
 
                 Console.Write("Процент скидки (0-100): ");
                 if (!decimal.TryParse(Console.ReadLine(), out decimal discountPercentage) ||
@@ -767,12 +793,16 @@ namespace DataBase2._0
                     CardNumber = cardNumber,
                     OwnerName = ownerName,
                     DiscountPercentage = discountPercentage,
-                    IssueDate = DateTime.Now
+                    IssueDate = DateTime.UtcNow // Ensure the date is in UTC
                 };
 
                 _context.DiscountCards.Add(discountCard);
                 _context.SaveChanges();
                 Console.WriteLine("Скидочная карта успешно добавлена!");
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении скидочной карты: {ex.InnerException?.Message ?? ex.Message}");
             }
             catch (Exception ex)
             {
@@ -1393,6 +1423,8 @@ namespace DataBase2._0
                 return;
             }
 
+            date = DateTime.SpecifyKind(date, DateTimeKind.Utc); // Ensure the date is in UTC
+
             var sales = _context.Sales
                 .Include(s => s.SoldDisc)
                 .Include(s => s.Seller)
@@ -1543,6 +1575,9 @@ namespace DataBase2._0
                     return;
                 }
 
+                startDate = DateTime.SpecifyKind(startDate, DateTimeKind.Utc); // Ensure the date is in UTC
+                endDate = DateTime.SpecifyKind(endDate, DateTimeKind.Utc); // Ensure the date is in UTC
+
                 var sales = _context.Sales
                     .Include(s => s.SoldDisc)
                     .Include(s => s.Seller)
@@ -1570,7 +1605,7 @@ namespace DataBase2._0
                     return;
                 }
 
-                DateTime endDate = DateTime.Now;
+                DateTime endDate = DateTime.UtcNow;
                 DateTime startDate = endDate.AddDays(-days);
 
                 var sales = _context.Sales
@@ -1788,6 +1823,5 @@ namespace DataBase2._0
             Console.WriteLine("\nНажмите любую клавишу для продолжения...");
             Console.ReadKey();
         }
-        
     }
 }
