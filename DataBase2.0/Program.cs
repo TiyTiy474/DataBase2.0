@@ -1436,6 +1436,7 @@ namespace DataBase2._0
             DisplaySalesResults(sales, $"Продажи за {date:dd.MM.yyyy}");
         }
 
+
         private static void ShowDetailedSaleInfo(Sale sale)
         {
             Console.WriteLine("\nПодробная информация о продаже:");
